@@ -1,6 +1,8 @@
 # Neuro-Symbolic Agents for OpenClaw
 
-Native OpenClaw tool plugin providing deterministic perception, forward-chaining symbolic reasoning, action selection, and a complete neuro-symbolic pipeline.
+Native OpenClaw wrapper for [joaovictorcamargo/AI-Agents-as-Neuro-Symbolic-System](https://github.com/joaovictorcamargo/AI-Agents-as-Neuro-Symbolic-System), pinned to upstream commit `8069f88c543c2b4fa94a1277d90d4a0c9885cf98`.
+
+The upstream project is a React demonstration rather than a reusable library. This plugin ports its actual runtime model into OpenClaw tools: four simulated recognized objects, four symbolic rules, and the resulting action/confidence/reasoning decision.
 
 ## Install
 

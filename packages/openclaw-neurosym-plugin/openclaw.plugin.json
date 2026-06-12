@@ -1,8 +1,8 @@
 {
   "id": "neurosym_agents",
   "name": "Neuro-Symbolic Agents",
-  "description": "Deterministic perception, symbolic reasoning, and action selection tools for OpenClaw agents.",
-  "version": "1.0.0",
+  "description": "Native OpenClaw wrapper for joaovictorcamargo/AI-Agents-as-Neuro-Symbolic-System.",
+  "version": "1.1.0",
   "configSchema": {
     "type": "object",
     "properties": {

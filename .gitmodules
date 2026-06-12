@@ -1,0 +1,3 @@
+[submodule "upstream/neuro-symbolic-ai-system"]
+	path = upstream/neuro-symbolic-ai-system
+	url = https://github.com/joaovictorcamargo/AI-Agents-as-Neuro-Symbolic-System.git

@@ -1,39 +1,38 @@
 import { describe, expect, it } from "vitest";
 import entry from "./index.js";
-import { decide, perceive, reason } from "./core.js";
+import { decide, perceive, reason, runPipeline, UPSTREAM } from "./core.js";
 import { getToolPluginMetadata } from "openclaw/plugin-sdk/tool-plugin";
 
 const names = ["neurosym_perceive", "neurosym_reason", "neurosym_decide", "neurosym_run_pipeline", "neurosym_info"];
 
-describe("neurosym_agents", () => {
+describe("neurosym_agents upstream wrapper", () => {
   it("declares the exact fixed tool contract", () => {
     const metadata = getToolPluginMetadata(entry);
     expect(metadata?.id).toBe("neurosym_agents");
     expect(metadata?.tools.map((tool) => tool.name)).toEqual(names);
   });
 
-  it("normalizes perception facts", () => {
-    expect(perceive({ observations: [" Rain ", "RAIN"], knownFacts: ["Cloudy"] }).facts).toEqual(["cloudy", "rain"]);
+  it("wraps the upstream simulated pattern recognizer", () => {
+    expect(perceive({ object: "stop_sign" })).toEqual({ object: "stop_sign", confidence: 0.91 });
   });
 
-  it("chains rules until fixpoint", () => {
-    const result = reason({
-      facts: ["rain"],
-      rules: [{ if: ["rain"], then: "wet" }, { if: ["wet"], then: "slippery" }],
-      maxSteps: 10,
+  it("wraps the upstream symbolic reasoner", () => {
+    expect(reason({ object: "pedestrian", confidence: 0.88 })).toEqual({
+      action: "reduce_speed",
+      confidence: 0.88,
+      reasoning: "When a pedestrian is detected, reduce speed and prepare to stop if needed",
     });
-    expect(result.facts).toEqual(["rain", "slippery", "wet"]);
-    expect(result.derivations).toHaveLength(2);
   });
 
-  it("selects the highest-ranked eligible action", () => {
-    const result = decide({
-      facts: ["wet", "umbrella"],
-      candidates: [
-        { action: "walk", requires: ["dry"] },
-        { action: "take_umbrella", requires: ["umbrella"], prefers: ["wet"] },
-      ],
-    });
-    expect(result.decision).toBe("take_umbrella");
+  it("returns no decision for an object outside the upstream rules", () => {
+    expect(decide({ object: "bicycle", confidence: 0.8 })).toBeNull();
+  });
+
+  it("runs the original three-stage flow", () => {
+    expect(runPipeline({ object: "car" }).decision.action).toBe("maintain_safe_distance");
+  });
+
+  it("pins the wrapped upstream source", () => {
+    expect(UPSTREAM.commit).toBe("8069f88c543c2b4fa94a1277d90d4a0c9885cf98");
   });
 });

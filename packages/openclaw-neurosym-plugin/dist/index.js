@@ -1,17 +1,13 @@
 import { Type } from "typebox";
 import { defineToolPlugin } from "openclaw/plugin-sdk/tool-plugin";
-import { decide, perceive, reason } from "./core.js";
-const RuleSchema = Type.Object({
-    if: Type.Array(Type.String()),
-    then: Type.String(),
-    confidence: Type.Optional(Type.Number({ minimum: 0, maximum: 1 })),
-});
-const CandidateSchema = Type.Object({
-    action: Type.String(),
-    requires: Type.Optional(Type.Array(Type.String())),
-    prefers: Type.Optional(Type.Array(Type.String())),
-    score: Type.Optional(Type.Number()),
-});
+import { decide, perceive, reason, RULES, runPipeline, SIMULATED_OBJECTS, UPSTREAM } from "./core.js";
+const ObjectSchema = Type.Union([
+    Type.Literal("car"),
+    Type.Literal("pedestrian"),
+    Type.Literal("traffic_light"),
+    Type.Literal("stop_sign"),
+]);
+const PatternSchema = Type.Object({ object: Type.String(), confidence: Type.Number({ minimum: 0, maximum: 1 }) });
 const ConfigSchema = Type.Object({
     defaultMaxSteps: Type.Optional(Type.Integer({ minimum: 1, maximum: 100, default: 10 })),
     defaultVerbose: Type.Optional(Type.Boolean({ default: true })),
@@ -19,70 +15,47 @@ const ConfigSchema = Type.Object({
 export default defineToolPlugin({
     id: "neurosym_agents",
     name: "Neuro-Symbolic Agents",
-    description: "Deterministic perception, symbolic reasoning, and action selection tools for OpenClaw agents.",
+    description: "Native OpenClaw wrapper for joaovictorcamargo/AI-Agents-as-Neuro-Symbolic-System.",
     configSchema: ConfigSchema,
     tools: (tool) => [
         tool({
             name: "neurosym_perceive",
-            description: "Normalize observations and known facts into a symbolic world state.",
-            parameters: Type.Object({
-                observations: Type.Array(Type.String()),
-                knownFacts: Type.Optional(Type.Array(Type.String())),
-                goal: Type.Optional(Type.String()),
-            }),
+            description: "Run the upstream demo's simulated neural pattern recognizer.",
+            parameters: Type.Object({ object: Type.Optional(ObjectSchema) }),
             execute: async (params) => perceive(params),
         }),
         tool({
             name: "neurosym_reason",
-            description: "Apply forward-chaining symbolic rules to facts until a fixpoint or step limit.",
-            parameters: Type.Object({
-                facts: Type.Array(Type.String()),
-                rules: Type.Array(RuleSchema),
-                maxSteps: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
-            }),
-            execute: async (params, config) => reason({ facts: params.facts, rules: params.rules, maxSteps: params.maxSteps ?? config.defaultMaxSteps ?? 10 }),
+            description: "Apply the upstream demo's symbolic rule to a recognized pattern.",
+            parameters: PatternSchema,
+            execute: async (params) => reason(params),
         }),
         tool({
             name: "neurosym_decide",
-            description: "Rank candidate actions using required and preferred symbolic facts.",
-            parameters: Type.Object({
-                facts: Type.Array(Type.String()),
-                candidates: Type.Array(CandidateSchema),
-                goal: Type.Optional(Type.String()),
-            }),
+            description: "Produce the upstream demo's final action, confidence, and reasoning.",
+            parameters: PatternSchema,
             execute: async (params) => decide(params),
         }),
         tool({
             name: "neurosym_run_pipeline",
-            description: "Run perception, symbolic reasoning, and action selection as one bounded pipeline.",
-            parameters: Type.Object({
-                observations: Type.Array(Type.String()),
-                knownFacts: Type.Optional(Type.Array(Type.String())),
-                rules: Type.Array(RuleSchema),
-                candidates: Type.Array(CandidateSchema),
-                goal: Type.Optional(Type.String()),
-                maxSteps: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
-            }),
+            description: "Run the upstream demo's pattern recognition, reasoning, and decision flow.",
+            parameters: Type.Object({ object: Type.Optional(ObjectSchema) }),
             execute: async (params, config) => {
-                const perceived = perceive(params);
-                const reasoned = reason({
-                    facts: perceived.facts,
-                    rules: params.rules,
-                    maxSteps: params.maxSteps ?? config.defaultMaxSteps ?? 10,
-                });
-                const decision = decide({ facts: reasoned.facts, candidates: params.candidates, goal: params.goal });
-                return config.defaultVerbose === false ? { decision: decision.decision } : { perceived, reasoned, decision };
+                const result = runPipeline(params);
+                return config.defaultVerbose === false ? result.decision : result;
             },
         }),
         tool({
             name: "neurosym_info",
-            description: "Report plugin capabilities and resolved configuration.",
+            description: "Report wrapped upstream source, supported patterns, rules, and OpenClaw configuration.",
             parameters: Type.Object({}),
             execute: async (_params, config) => ({
                 id: "neurosym_agents",
-                version: "1.0.0",
+                version: "1.1.0",
+                upstream: UPSTREAM,
+                simulatedObjects: SIMULATED_OBJECTS,
+                rules: RULES,
                 config: { defaultMaxSteps: config.defaultMaxSteps ?? 10, defaultVerbose: config.defaultVerbose ?? true },
-                tools: ["neurosym_perceive", "neurosym_reason", "neurosym_decide", "neurosym_run_pipeline", "neurosym_info"],
             }),
         }),
     ],

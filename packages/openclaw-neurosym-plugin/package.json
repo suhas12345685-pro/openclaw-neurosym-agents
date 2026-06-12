@@ -1,7 +1,12 @@
 {
   "name": "openclaw-neurosym-agents",
-  "version": "1.0.0",
-  "description": "Native OpenClaw neuro-symbolic perception, reasoning, decision, and pipeline tools.",
+  "version": "1.1.0",
+  "description": "Native OpenClaw wrapper for joaovictorcamargo/AI-Agents-as-Neuro-Symbolic-System.",
+  "homepage": "https://github.com/suhas12345685-pro/openclaw-neurosym-agents",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/suhas12345685-pro/openclaw-neurosym-agents.git"
+  },
   "keywords": [
     "openclaw",
     "openclaw-plugin",

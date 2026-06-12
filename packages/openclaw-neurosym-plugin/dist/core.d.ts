@@ -1,50 +1,32 @@
-export type Rule = {
-    if: string[];
+export type PatternRecognitionResult = {
+    object: string;
+    confidence: number;
+};
+export type SymbolicRule = {
+    if: string;
     then: string;
-    confidence?: number;
+    explanation: string;
 };
-export type Candidate = {
+export type Decision = {
     action: string;
-    requires?: string[];
-    prefers?: string[];
-    score?: number;
+    confidence: number;
+    reasoning: string;
 };
-export declare function normalizeFacts(values: string[]): string[];
+export declare const UPSTREAM: {
+    readonly repository: "https://github.com/joaovictorcamargo/AI-Agents-as-Neuro-Symbolic-System";
+    readonly commit: "8069f88c543c2b4fa94a1277d90d4a0c9885cf98";
+    readonly localClone: "upstream/neuro-symbolic-ai-system";
+};
+export declare const SIMULATED_OBJECTS: readonly PatternRecognitionResult[];
+export declare const RULES: readonly SymbolicRule[];
 export declare function perceive(input: {
-    observations: string[];
-    knownFacts?: string[];
-    goal?: string;
+    object?: string;
+}): PatternRecognitionResult;
+export declare function reason(pattern: PatternRecognitionResult): Decision | null;
+export declare function decide(pattern: PatternRecognitionResult): Decision | null;
+export declare function runPipeline(input: {
+    object?: string;
 }): {
-    facts: string[];
-    goal: string | null;
-    observationCount: number;
-};
-export declare function reason(input: {
-    facts: string[];
-    rules: Rule[];
-    maxSteps: number;
-}): {
-    facts: string[];
-    derivations: {
-        fact: string;
-        rule: number;
-        confidence: number;
-    }[];
-    steps: number;
-    reachedFixpoint: boolean;
-};
-export declare function decide(input: {
-    facts: string[];
-    candidates: Candidate[];
-    goal?: string;
-}): {
-    decision: string | null;
-    goal: string | null;
-    ranked: {
-        action: string;
-        eligible: boolean;
-        score: number;
-        matched: string[];
-        missing: string[];
-    }[];
+    pattern: PatternRecognitionResult;
+    decision: Decision | null;
 };
