@@ -1,0 +1,33 @@
+{
+  "id": "neurosym_agents",
+  "name": "Neuro-Symbolic Agents",
+  "description": "Deterministic perception, symbolic reasoning, and action selection tools for OpenClaw agents.",
+  "version": "1.0.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "defaultMaxSteps": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 10
+      },
+      "defaultVerbose": {
+        "type": "boolean",
+        "default": true
+      }
+    }
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "tools": [
+      "neurosym_perceive",
+      "neurosym_reason",
+      "neurosym_decide",
+      "neurosym_run_pipeline",
+      "neurosym_info"
+    ]
+  }
+}
